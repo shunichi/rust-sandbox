@@ -1,0 +1,6 @@
+[package]
+name = "more_uniq"
+version = "0.1.0"
+authors = ["Shunichi Ikegami <sike.tm@gmail.com>"]
+
+[dependencies]

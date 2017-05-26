@@ -1,0 +1,8 @@
+[package]
+name = "chist"
+version = "0.1.0"
+authors = ["Shunichi Ikegami <sike.tm@gmail.com>"]
+
+[dependencies]
+rusqlite = "0.11.0"
+tempfile = "2.1.5"

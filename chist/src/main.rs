@@ -1,12 +1,10 @@
-extern crate rusqlite;
-extern crate tempfile;
+extern crate chist;
 
-mod history;
-
+use chist::history;
 use std::io::Write;
 
 fn main() {
-    if let Err(error) = history::history() {
+    if let Err(error) = history::history(&history::default_db_path()) {
         writeln!(&mut std::io::stderr(), "chist: error: {}", &error).unwrap();
         std::process::exit(1);
     }

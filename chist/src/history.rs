@@ -2,9 +2,6 @@ use std;
 use rusqlite;
 use tempfile;
 
-// const DEFAULT_DB_PATH: &str = "Library/Application Support/Google/Chrome/Default/History";
-const DEFAULT_DB_PATH: &str = "Library/Application Support/Google/Chrome/Profile 1/History";
-
 struct Entry {
     title: String,
     url: String,
@@ -20,13 +17,7 @@ fn copy_history_to_temp(db_path: &str) -> std::io::Result<tempfile::NamedTempFil
     Ok(tmp)
 }
 
-pub fn default_db_path() -> String {
-    let mut path_buf = std::env::home_dir().unwrap();
-    path_buf.push(DEFAULT_DB_PATH);
-    path_buf.into_os_string().into_string().unwrap()
-}
-
-pub fn history(db_path: &str) -> Result<(), String> {
+pub fn history(db_path: &str, separator: &str) -> Result<(), String> {
     let tmpfile = copy_history_to_temp(db_path).map_err(|e| e.to_string())?;
     let conn = rusqlite::Connection::open(tmpfile.path())
         .map_err(|e| e.to_string())?;
@@ -43,7 +34,7 @@ pub fn history(db_path: &str) -> Result<(), String> {
 
     for e in iter {
         let entry = e.unwrap();
-        println!("{}|{}", entry.title, entry.url);
+        println!("{}{}{}", entry.title, separator, entry.url);
     }
     Ok(())
 }

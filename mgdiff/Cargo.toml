@@ -1,0 +1,10 @@
+[package]
+name = "mgdiff"
+version = "0.1.0"
+authors = ["Shunichi Ikegami <sike.tm@gmail.com>"]
+
+[dependencies]
+yaml-rust = "0.3.5"
+postgres = "0.15.1"
+regex = "0.2.2"
+users = "0.5.3"

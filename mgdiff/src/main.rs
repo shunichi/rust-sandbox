@@ -3,6 +3,7 @@ extern crate postgres;
 extern crate regex;
 extern crate users;
 extern crate mgdiff;
+extern crate itertools;
 
 use std::process::Command;
 use yaml_rust::YamlLoader;
@@ -13,6 +14,7 @@ use regex::Regex;
 use std::collections::{HashSet, HashMap};
 use users::{get_user_by_uid, get_current_uid};
 use mgdiff::cli;
+use itertools::Itertools;
 
 fn current_user_name() -> String {
     let user = get_user_by_uid(get_current_uid()).unwrap();
@@ -88,10 +90,15 @@ fn migrate_down(u: &Vec<&str>) {
     }
 }
 
-fn migrate_down_multi(u: &Vec<&str>) {
-    let mut reversed = u.clone();
-    reversed.reverse();
-    let versions = reversed.join(",");
+fn reverse_join(v: &[&str]) -> String {
+    v.iter().rev().join(",")
+}
+
+fn migrate_down_multi(u: &[&str]) {
+    if u.is_empty() {
+        return;
+    }
+    let versions = reverse_join(u);
     let versions_arg = format!("VERSIONS={}", versions);
     println!("bundle exec rake migration:down_multiple {}", versions_arg);
     Command::new("bundle")

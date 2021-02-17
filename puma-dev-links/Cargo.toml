@@ -1,5 +1,5 @@
 [package]
-name = "puma-dev-links"
+name = "pdl"
 version = "0.1.0"
 authors = ["Shunichi Ikegami <sike.tm@gmail.com>"]
 edition = "2018"
@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 dirs = "3.0.1"
+clap = "2.33.3"

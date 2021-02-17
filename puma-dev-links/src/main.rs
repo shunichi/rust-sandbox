@@ -1,5 +1,7 @@
 use std::{cmp::Ordering, fs};
 use dirs;
+mod options;
+use options::SubCommandType;
 
 enum EntryType {
     Link { target: String },
@@ -68,7 +70,7 @@ fn get_puma_dev_entries() -> std::io::Result<Vec<Entry>> {
     Ok(vec)
 }
 
-fn main() -> std::io::Result<()> {
+fn list_entries() -> std::io::Result<()> {
     let entries = get_puma_dev_entries()?;
     if entries.len() == 0 {
         return Ok(());
@@ -86,4 +88,44 @@ fn main() -> std::io::Result<()> {
         }
     }
     Ok(())
+}
+
+fn show_port() -> std::io::Result<()> {
+    let cwd = std::env::current_dir()?;
+    let app_name = cwd.file_name().unwrap().to_string_lossy();
+    let entries = get_puma_dev_entries()?;
+    match entries.iter().find(|e| e.name == app_name) {
+        Some(entry) => {
+            match &entry.entry_type {
+                EntryType::Port { port } => {
+                    print!("{}", port);
+                },
+                EntryType::Link { target } =>  {
+                    eprintln!("{} is symlink to {}", app_name, target);
+                    let error = std::io::Error::new(std::io::ErrorKind::NotFound, app_name);
+                    return Err(error);
+                },
+            }
+        },
+        None => {
+            eprintln!("can't find app \"{}\"", app_name);
+            let error = std::io::Error::new(std::io::ErrorKind::NotFound, app_name);
+            return Err(error);
+        }
+    }
+    Ok(())
+}
+
+fn link_app() -> ! {
+    eprintln!("link subcommand is not implemented yet.");
+    std::process::exit(1);
+}
+
+fn main() -> () {
+    let options = options::parse_opts();
+    let _result = match options.sub_command {
+        SubCommandType::List => { list_entries() },
+        SubCommandType::Port => { show_port() },
+        SubCommandType::Link => { link_app() },
+    };
 }

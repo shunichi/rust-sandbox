@@ -1,6 +1,8 @@
-use std::{cmp::Ordering, fs, path::PathBuf};
-use dirs;
+use std::fs;
+use std::cmp::Ordering;
+use std::path::PathBuf;
 use std::collections::HashSet;
+use dirs;
 mod options;
 use options::SubCommandType;
 
@@ -182,9 +184,9 @@ fn unlink_app(option_app_name: Option<String>) -> Option<()> {
     let meta = fs::symlink_metadata(&path).ok()?;
     let file_type = meta.file_type();
     if file_type.is_symlink() {
-        std::fs::remove_file(path).unwrap();
+        fs::remove_file(path).unwrap();
     } else if file_type.is_file() {
-        std::fs::remove_file(path).unwrap();
+        fs::remove_file(path).unwrap();
     } else if file_type.is_dir() {
         eprintln!("error: '{}' is a directory", app_name);
         return None;

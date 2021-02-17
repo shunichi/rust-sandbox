@@ -6,6 +6,7 @@ pub enum SubCommandType {
   List,
   Port,
   Link,
+  Unlink,
 }
 
 pub struct Options {
@@ -26,12 +27,15 @@ pub fn parse_opts() -> Options {
                     .about("find linked port"))
         .subcommand(SubCommand::with_name("link")
                     .about("link app"))
+        .subcommand(SubCommand::with_name("unlink")
+                    .about("unlink app"))
         .get_matches();
 
     match matches.subcommand() {
       ("list", ..) => { Options { sub_command: SubCommandType::List } },
       ("port", ..) => { Options { sub_command: SubCommandType::Port } },
       ("link", ..) => { Options { sub_command: SubCommandType::Link } },
+      ("unlink", ..) => { Options { sub_command: SubCommandType::Unlink } },
       ("", ..)  => { Options { sub_command: SubCommandType::List } },
       _ => { show_help(matches, 1) }
     }

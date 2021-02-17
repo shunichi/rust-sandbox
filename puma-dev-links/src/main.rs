@@ -101,6 +101,16 @@ fn next_port() -> Option<i32> {
     }
 }
 
+fn app_entry_path(option_app_name: Option<String>) -> Option<(String, PathBuf)> {
+    let mut path = puma_dev_dir()?;
+    let app_name = match option_app_name {
+        Some(n) => n,
+        None => current_dir_basename()?,
+    };
+    path.push(&app_name);
+    Some((app_name, path))
+}
+
 fn list_entries() -> Option<()> {
     let entries = get_puma_dev_entries()?;
     if entries.len() == 0 {
@@ -124,8 +134,8 @@ fn list_entries() -> Option<()> {
     Some(())
 }
 
-fn show_port() -> Option<()> {
-    let app_name = current_dir_basename()?;
+fn show_port(option_app_name: Option<String>) -> Option<()> {
+    let (app_name, _) = app_entry_path(option_app_name)?;
     let entries = get_puma_dev_entries()?;
     match entries.iter().find(|e| e.name == app_name) {
         Some(entry) => {
@@ -151,15 +161,8 @@ fn show_port() -> Option<()> {
     Some(())
 }
 
-fn app_entry_path() -> Option<(String, PathBuf)> {
-    let mut path = puma_dev_dir()?;
-    let app_name = current_dir_basename()?;
-    path.push(&app_name);
-    Some((app_name, path))
-}
-
-fn link_app() -> Option<()> {
-    let (app_name, path) = app_entry_path()?;
+fn link_app(option_app_name: Option<String>) -> Option<()> {
+    let (app_name, path) = app_entry_path(option_app_name)?;
     if path.exists(){
         eprintln!("error: '{}' already exists", path.to_string_lossy());
         return Some(());
@@ -170,8 +173,8 @@ fn link_app() -> Option<()> {
     Some(())
 }
 
-fn unlink_app() -> Option<()> {
-    let (app_name, path) = app_entry_path()?;
+fn unlink_app(option_app_name: Option<String>) -> Option<()> {
+    let (app_name, path) = app_entry_path(option_app_name)?;
     if !path.exists(){
         eprintln!("error: app '{}' does not exists", app_name);
         return Some(());
@@ -195,8 +198,8 @@ fn main() -> () {
     let options = options::parse_opts();
     let _result = match options.sub_command {
         SubCommandType::List => { list_entries() },
-        SubCommandType::Port => { show_port() },
-        SubCommandType::Link => { link_app() },
-        SubCommandType::Unlink => { unlink_app() },
+        SubCommandType::Port { app_name } => { show_port(app_name) },
+        SubCommandType::Link { app_name } => { link_app(app_name) },
+        SubCommandType::Unlink { app_name } => { unlink_app(app_name) },
     };
 }

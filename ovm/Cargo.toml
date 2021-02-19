@@ -1,0 +1,12 @@
+[package]
+name = "ovm"
+version = "0.1.0"
+authors = ["Shunichi Ikegami <sike.tm@gmail.com>"]
+edition = "2018"
+description = "overmind wrapper with dynamic webpacker port assignment"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+subprocess = "0.2.6"
+portpicker = "0.1.0"

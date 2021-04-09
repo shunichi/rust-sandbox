@@ -73,14 +73,46 @@ fn reconnect_device(device_path: &str) {
     devctl.write(b"reconnect").unwrap();
 }
 
-fn main() {
+fn do_loop() {
+    do_oneshot(true);
+    loop {
+        std::thread::sleep(time::Duration::from_millis(2000));
+        do_oneshot(false);
+    }
+}
+
+fn do_oneshot(force_output: bool) {
     if elan_trackppoint_exists() {
-        println!("TPPS/2 Elan TrackPoint found!");
-        std::process::exit(0);
+        if force_output {
+            println!("TPPS/2 Elan TrackPoint found!");
+        }
     } else {
         println!("TPPS/2 Elan TrackPoint not found!");
+        let drvctl_path = rmi4_device_path();
+        println!("Reconnecting RMI4 device: {}", &drvctl_path);
+        reconnect_device(&drvctl_path);
     }
-    let drvctl_path = rmi4_device_path();
-    println!("Reconnecting RMI4 device: {}", &drvctl_path);
-    reconnect_device(&drvctl_path);
+}
+
+struct Options {
+    loop_mode: bool,
+}
+
+fn parse_options() -> Options {
+    let mut options = Options { loop_mode: false };
+    for argument in std::env::args() {
+        if argument == "-l" {
+            options.loop_mode = true;
+        }
+    }
+    return options;
+}
+
+fn main() {
+    let options = parse_options();
+    if options.loop_mode {
+        do_loop();
+    } else {
+        do_oneshot(false);
+    }
 }

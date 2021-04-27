@@ -34,7 +34,7 @@ fn parse_options() -> Options {
         force: false,
         verbose: false,
     };
-    for argument in std::env::args() {
+    for argument in std::env::args().skip(1) {
         match argument.as_str() {
             "-l" => {
                 options.loop_mode = true;

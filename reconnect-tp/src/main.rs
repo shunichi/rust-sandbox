@@ -1,5 +1,5 @@
-use std::io::prelude::*;
 use std::fs::{self, OpenOptions};
+use std::io::prelude::*;
 use std::path::PathBuf;
 use std::{thread, time};
 
@@ -8,6 +8,53 @@ use std::{thread, time};
 // echo -n "none" > /sys/bus/serio/devices/serioX/drvctl
 // sleep 1
 // echo -n "reconnect" > /sys/bus/serio/devices/serioX/drvctl
+
+struct Options {
+    loop_mode: bool,
+    force: bool,
+    verbose: bool,
+}
+
+fn usage() {
+    eprint!(
+        "Usage: reconnect-tp [OPTIONS]
+
+OPTIONS:
+  -l         loop mode
+  -f         reconnect even if already connected
+  --verbose  verbose output
+"
+    );
+    std::process::exit(1);
+}
+
+fn parse_options() -> Options {
+    let mut options = Options {
+        loop_mode: false,
+        force: false,
+        verbose: false,
+    };
+    for argument in std::env::args() {
+        match argument.as_str() {
+            "-l" => {
+                options.loop_mode = true;
+            }
+            "-f" => {
+                options.force = true;
+            }
+            "--verbose" => {
+                options.verbose = true;
+            }
+            _ => {
+                usage();
+            }
+        }
+    }
+    if options.loop_mode {
+        options.force = false;
+    }
+    return options;
+}
 
 fn elan_trackppoint_exists() -> bool {
     let input_device_dir = "/sys/class/input/";
@@ -42,10 +89,12 @@ fn rmi4_device_path() -> String {
         description_path.push("description");
         if description_path.exists() {
             let description = fs::read_to_string(description_path.as_os_str()).unwrap();
-            // println!("{}: {}", description_path.to_string_lossy(), description);
+            println!("{}: {}", description_path.to_string_lossy(), description);
             if description == rmi4_description {
                 return entry_path.into_os_string().into_string().unwrap();
             }
+        } else {
+            println!("{}: not exists", description_path.to_string_lossy())
         }
     }
     panic!("RMI4 device not found!");
@@ -73,46 +122,38 @@ fn reconnect_device(device_path: &str) {
     devctl.write(b"reconnect").unwrap();
 }
 
-fn do_loop() {
-    do_oneshot(true);
+fn do_loop(options: &Options) {
+    do_oneshot(&options, true);
     loop {
         std::thread::sleep(time::Duration::from_millis(2000));
-        do_oneshot(false);
+        do_oneshot(&options, false);
     }
 }
 
-fn do_oneshot(force_output: bool) {
-    if elan_trackppoint_exists() {
+fn reconnect() {
+    let drvctl_path = rmi4_device_path();
+    println!("Reconnecting RMI4 device: {}", &drvctl_path);
+    reconnect_device(&drvctl_path);
+}
+
+fn do_oneshot(options: &Options, force_output: bool) {
+    if options.force {
+        reconnect();
+    } else if elan_trackppoint_exists() {
         if force_output {
             println!("TPPS/2 Elan TrackPoint found!");
         }
     } else {
         println!("TPPS/2 Elan TrackPoint not found!");
-        let drvctl_path = rmi4_device_path();
-        println!("Reconnecting RMI4 device: {}", &drvctl_path);
-        reconnect_device(&drvctl_path);
+        reconnect();
     }
-}
-
-struct Options {
-    loop_mode: bool,
-}
-
-fn parse_options() -> Options {
-    let mut options = Options { loop_mode: false };
-    for argument in std::env::args() {
-        if argument == "-l" {
-            options.loop_mode = true;
-        }
-    }
-    return options;
 }
 
 fn main() {
     let options = parse_options();
     if options.loop_mode {
-        do_loop();
+        do_loop(&options);
     } else {
-        do_oneshot(false);
+        do_oneshot(&options, false);
     }
 }

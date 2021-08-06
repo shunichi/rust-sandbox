@@ -1,0 +1,7 @@
+[workspace]
+
+members = [
+    "reconnect-tp",
+    "more_uniq",
+    "mgdiff"
+]

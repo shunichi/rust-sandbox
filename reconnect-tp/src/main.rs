@@ -79,7 +79,7 @@ fn elan_trackppoint_exists() -> bool {
     return false;
 }
 
-fn rmi4_device_path() -> String {
+fn rmi4_device_path() -> Option<String> {
     let rmi4_description = "RMI4 PS/2 pass-through\n";
     let serio_device_dir = "/sys/bus/serio/devices";
 
@@ -91,13 +91,13 @@ fn rmi4_device_path() -> String {
             let description = fs::read_to_string(description_path.as_os_str()).unwrap();
             println!("{}: {}", description_path.to_string_lossy(), description);
             if description == rmi4_description {
-                return entry_path.into_os_string().into_string().unwrap();
+                return Some(entry_path.into_os_string().into_string().unwrap());
             }
         } else {
             println!("{}: not exists", description_path.to_string_lossy())
         }
     }
-    panic!("RMI4 device not found!");
+    None
 }
 
 fn reconnect_device(device_path: &str) {
@@ -131,9 +131,13 @@ fn do_loop(options: &Options) {
 }
 
 fn reconnect() {
-    let drvctl_path = rmi4_device_path();
-    println!("Reconnecting RMI4 device: {}", &drvctl_path);
-    reconnect_device(&drvctl_path);
+    match rmi4_device_path() {
+        Some(drvctl_path) => {
+            println!("Reconnecting RMI4 device: {}", &drvctl_path);
+            reconnect_device(&drvctl_path);
+        }
+        None => println!("Failed to reconnect."),
+    }
 }
 
 fn do_oneshot(options: &Options, force_output: bool) {

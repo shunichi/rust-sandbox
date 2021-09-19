@@ -3,5 +3,6 @@
 members = [
     "reconnect-tp",
     "more_uniq",
-    "mgdiff"
+    "mgdiff",
+    "ovm"
 ]
